@@ -1,32 +1,31 @@
-# otbtc-staking
+# btc-staking-icp
 
-otBTC Staking is an implementation for staking BTC on Internet Computer, built upon the ckBTC implementation. It comprises a set of canisters (smart contracts) enabling users to stake their BTC on the Internet Computer and earn rewards.
+BTC Staking is an implementation for staking BTC on Internet Computer, built upon the ckBTC implementation. It comprises a set of canisters (smart contracts) enabling users to stake their BTC on the Internet Computer and earn rewards.
 
 ## Canisters
 
-* otBTC Minter: The otBTC Minter canister acts as a wrapper for the ckBTC Minter canister, providing functionalities such as `get_btc_address` and `update_balance` for depositing BTC. Additionally, it facilitates the locking of ckBTC tokens for otBTC holders and offers functions for users to withdraw BTC from either the otBTC Staking Pool or otBTC Ledger.
-* otBTC Ledger: This component is a standard ledger implementation utilizing the [ICP Ledger](https://github.com/dfinity/ic/tree/master/rs/rosetta-api/icp_ledger). It incorporates functionalities of the ICRC2 token standard.
-* otBTC Staking Pool: The otBTC Staking Pool canister serves as a platform for otBTC holders to stake their otBTC tokens and receive rewards.
+### BTC Staking Pool
+
+This canister encompasses the following functionalities:
+
+* Serving as a wrapper for the ckBTC Minter canister, the BTC Staking Pool canister provides essential functionalities like `get_btc_address` and `update_balance` for facilitating BTC deposits.
+* It manages the storage of ckBTC tokens within its sub-accounts for users who deposit BTC.
+* The canister handles the staking of ckBTC tokens in its main account for users seeking to acquire otBTC tokens. Additionally, it functions as a staking pool for ckBTC tokens, treating them as equivalent to BTC tokens.
+* Users are offered functions to withdraw BTC from either the main account (by unstake from Staking Pool) or the sub-accounts (ckBTC escrows).
+
+### otBTC Ledger
+
+This component is a standard ledger implementation utilizing the [ICP Ledger](https://github.com/dfinity/ic/tree/master/rs/rosetta-api/icp_ledger). It incorporates functionalities of the ICRC2 token standard.
 
 ## Business Features
 
 ### Deposit BTC
 
-The process for BTC holders to deposit their BTC to the otBTC Staking Pool canister via the ckBTC implementation proceeds as follows:
+The process for BTC holders to deposit their BTC to the BTC Staking Pool canister via the ckBTC implementation proceeds as follows:
 
-* The user obtains the deposit address by invoking the `get_btc_address` function of the otBTC Minter canister. This function, serving as a wrapper of the `get_btc_address` function of the ckBTC Minter canister, generates a BTC deposit address for the user.
+* The user obtains the deposit address by invoking the `get_btc_deposit_address` function of the BTC Staking Pool canister. This function, serving as a wrapper of the `get_btc_address` function of the ckBTC Minter canister, generates a BTC deposit address for the user.
 * The user transfers BTC to the provided deposit address on the Bitcoin network.
-* Subsequently, the user calls the `update_balance` function of the otBTC Minter canister to perform the following actions automatically:
-  * Update the user's balance
-  * Mint ckBTC tokens
-  * Mint otBTC tokens
-  * Stake the otBTC tokens into the otBTC Staking Pool.
-
-The `update_balance` function serves as a wrapper for the `update_balance` function of the ckBTC Minter canister, incorporating additional processes:
-
-* Update deposited BTC amount and mint ckBTC tokens: The ckBTC Minter canister mints an equivalent amount of ckBTC tokens to match the deposited BTC. These tokens are minted into a specific sub-account of the otBTC Minter canister, with the sub-account ID generated from the user's principal ID and a specified sub-account ID.
-* Mint otBTC tokens: The otBTC Minter canister mints an equivalent amount of otBTC tokens as the ckBTC tokens minted. These newly minted otBTC tokens are directly transferred to a designated sub-account of the otBTC Staking Pool. The sub-account ID is generated from the user's principal ID and a specified sub-account ID.
-* Inform otBTC Staking Pool: The otBTC Minter canister notifies the otBTC Staking Pool by invoking its `stake_for` function, ensuring the staked otBTC tokens are accounted for the user.
+* Subsequently, the user calls the `update_balance` function of the BTC Staking Pool canister to update the user's BTC balance and mint ckBTC tokens for the user. The minted ckBTC tokens are then transferred to a designated sub-account of the BTC Staking Pool canister. The sub-account ID is specified by the user.
 
 The general process flow is shown as follows:
 
@@ -34,10 +33,10 @@ The general process flow is shown as follows:
 
 ### Stake
 
-The process for otBTC holders to stake their otBTC tokens into the otBTC Staking Pool to earn rewards follows these steps:
+The process for ckBTC holders to stake their ckBTC tokens into the BTC Staking Pool to earn otBTC tokens by calling the `stake` function of the BTC Staking Pool canister proceeds as follows:
 
-* The user initiates the process by invoking the `icrc2_approve` function of the otBTC Ledger canister. This action approves the otBTC Staking Pool to transfer otBTC tokens from the user's account.
-* Subsequently, the user calls the `stake` function of the otBTC Staking Pool. This function facilitates the transfer of a specified amount of otBTC tokens from the user's account to a designated sub-account of the otBTC Staking Pool. The sub-account ID is generated from the user's principal ID and a specified sub-account ID. Additionally, it updates both the user's staked amount and the total staked amount within the system.
+* Call `transfer` function of ckBTC Ledger to transfer a certain amount of ckBTC tokens in the corresponding sub-account of the BTC Staking Pool canister to the main account of the BTC Staking Pool canister. This action updates both the user's staked amount and the total staked amount within the system.
+* Call `transfer` function of otBTC Ledger to mint the same amount of otBTC tokens to the corresponding sub-account of the BTC Staking Pool canister.
 
 The general process flow is shown as follows:
 
@@ -45,30 +44,20 @@ The general process flow is shown as follows:
 
 ### Unstake
 
-Stakers of otBTC tokens can unstake a portion or all of their otBTC tokens from the otBTC Staking Pool by invoking the `unstake` function. Following the unstaking process, the user's unstaked otBTC tokens are returned to their account.
+Stakers of otBTC tokens can unstake a portion or all of their otBTC tokens by invoking the `unstake` function of BTC Staking Pool canister. The `unstake` function proceeds as follows:
+
+* Transfer a certain amount of otBTC tokens from the sub-account of BTC Staking Pool canister to its main account. This action will actually burn the otBTC tokens.
+* Generate a unbonding request for the user, which will be processed after a certain period of time.
+* After the unbonding period, the user can call the `withdraw` function of the BTC Staking Pool canister to withdraw the staked ckBTC tokens from the main account of the BTC Staking Pool canister to the corresponding sub-account.
 
 The general process flow is shown as follows:
 
 ![Unstake](./images/unstake.png)
 
-### Withdraw BTC from otBTC Staking Pool
+### Withdraw BTC
 
-Stakers of otBTC tokens can withdraw their BTC from the otBTC Staking canister through the ckBTC implementation transparently, facilitated by calling the `withdraw_btc` function of the otBTC Staking Pool. The steps involved in the `withdraw_btc` function are outlined below:
-
-* Transfer the staked otBTC tokens to the otBTC Minter canister. This action will actually burn the otBTC tokens.
-* Invoke the `withdraw_btc_for` function of the otBTC Minter canister. This function, in turn, triggers the `transfer` function of the ckBTC Ledger canister to burn the corresponding ckBTC tokens and unlock the BTC on the Bitcoin network for the user.
+Holders of ckBTC tokens can withdraw their BTC through the ckBTC implementation transparently, facilitated by calling the `withdraw_btc` function of the BTC Staking Pool canister. This function triggers the `transfer` function of the ckBTC Ledger canister to burn the corresponding ckBTC tokens from the corresponding sub-account of BTC Staking Pool canister and unlock the BTC on the Bitcoin network for the user.
 
 The general process flow is shown as follows:
 
-![Withdraw BTC from pool](./images/withdraw_btc_from_pool.png)
-
-### Withdraw BTC from otBTC tokens
-
-The process for otBTC holders to withdraw their BTC from the otBTC tokens involves the following steps:
-
-* The user initiates the process by calling the `icrc2_approve` function of the otBTC Ledger canister. This action approves the otBTC Minter to transfer otBTC tokens from the user's account.
-* Subsequently, the user calls the `withdraw_btc` function of the otBTC Minter canister. This function facilitates the transfer of a specified amount of otBTC tokens from the user's account to the otBTC Minter's account. The otBTC tokens are then burned. Following this, the function invokes the `transfer` function of the ckBTC Ledger canister to burn the corresponding ckBTC tokens and unlock the BTC on the Bitcoin network for the user.
-
-The general process flow is shown as follows:
-
-![Withdraw BTC from otBTC](./images/withdraw_btc_from_otbtc.png)
+![Withdraw BTC](./images/withdraw_btc.png)
