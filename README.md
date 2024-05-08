@@ -44,11 +44,11 @@ The general process flow is shown as follows:
 
 ### Unstake
 
-Stakers of otBTC tokens can unstake a portion or all of their otBTC tokens by invoking the `unstake` function of BTC Staking Pool canister. The `unstake` function proceeds as follows:
+Stakers of otBTC tokens can initiate the partial or complete unstaking of their otBTC tokens by invoking the `unstake` function of the BTC Staking Pool canister. The `unstake` function operates through the following steps:
 
-* Transfer a certain amount of otBTC tokens from the sub-account of BTC Staking Pool canister to its main account. This action will actually burn the otBTC tokens.
-* Generate a unbonding request for the user, which will be processed after a certain period of time.
-* After the unbonding period, the user can call the `withdraw` function of the BTC Staking Pool canister to withdraw the staked ckBTC tokens from the main account of the BTC Staking Pool canister to the corresponding sub-account.
+* Transfer a specified amount of otBTC tokens from the sub-account of the BTC Staking Pool canister to its main account. This action effectively burns the otBTC tokens.
+* Generate an unbonding request for the user, which will be queued for processing after a predetermined period. These requests are stored in the unbonding queue of the BTC Staking Pool canister.
+* A trigger service periodically calls the `unlock_tokens_in_queue` function of the BTC Staking Pool canister to examine whether the first request in the unbonding queue can be executed. Upon verification, the staked ckBTC tokens corresponding to the first request are transferred from the main account of the BTC Staking Pool canister to the respective sub-account.
 
 The general process flow is shown as follows:
 
@@ -61,3 +61,22 @@ Holders of ckBTC tokens can withdraw their BTC through the ckBTC implementation 
 The general process flow is shown as follows:
 
 ![Withdraw BTC](./images/withdraw_btc.png)
+
+## BTC Staking Pool interfaces
+
+### Update functions
+
+| Function | Parameter | Note
+|---|---|---
+| get_btc_deposit_address | subaccount | The address of an Ethereum account of the user.
+| update_balance | subaccount | The address of an Ethereum account of the user.
+| stake | subaccount | The address of an Ethereum account of the user.
+| | amount | The amount of ckBTC tokens the user wants to stake.
+| | signature | The signature of the message `<nonce> stake <amount>` signed by the private key corresponding to the given Ethereum account.
+| Unstake | subaccount | The address of an Ethereum account of the user.
+| | amount | The amount of otBTC tokens the user wants to unstake.
+| | signature | The signature of the message `<nonce> unstake <amount>` signed by the private key corresponding to the given Ethereum account.
+| unlock_tokens_in_queue | N/A | -
+| withdraw_btc | subaccount | The address of an Ethereum account of the user.
+| | amount | The amount of ckBTC tokens the user wants to withdraw.
+| | signature | The signature of the message `<nonce> withdraw_btc <amount>` signed by the private key corresponding to the given Ethereum account.
