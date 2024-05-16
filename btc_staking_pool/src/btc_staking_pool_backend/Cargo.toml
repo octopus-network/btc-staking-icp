@@ -1,0 +1,20 @@
+[package]
+name = "btc_staking_pool_backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+candid = { workspace = true }
+hex = { workspace = true }
+getrandom = { workspace = true }
+ic-cdk = { workspace = true }
+ic-btc-interface = { workspace = true }
+ic-ledger-types = { workspace = true }
+libsecp256k1 = { workspace = true }
+serde = { workspace = true }
+sha3 = { workspace = true }

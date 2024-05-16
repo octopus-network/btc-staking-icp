@@ -1,0 +1,17 @@
+{
+  "canisters": {
+    "btc_staking_pool_backend": {
+      "candid": "src/btc_staking_pool_backend/btc_staking_pool_backend.did",
+      "package": "btc_staking_pool_backend",
+      "type": "rust"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

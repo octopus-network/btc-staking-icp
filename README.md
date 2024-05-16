@@ -68,15 +68,15 @@ The general process flow is shown as follows:
 
 | Function | Parameter | Note
 |---|---|---
-| get_btc_deposit_address | subaccount | The address of an Ethereum account of the user.
-| update_balance | subaccount | The address of an Ethereum account of the user.
-| stake | subaccount | The address of an Ethereum account of the user.
+| get_btc_deposit_address | eth_address | The address of an Ethereum account of the user.
+| update_balance | eth_address | The address of an Ethereum account of the user.
+| stake | eth_address | The address of an Ethereum account of the user.
 | | amount | The amount of ckBTC tokens the user wants to stake.
-| | signature | The signature of the message `<nonce> stake <amount>` signed by the private key corresponding to the given Ethereum account.
-| Unstake | subaccount | The address of an Ethereum account of the user.
+| | signature | The signature of the message `<nonce>:stake:<amount>` signed by the private key corresponding to the given Ethereum account.
+| Unstake | eth_address | The address of an Ethereum account of the user.
 | | amount | The amount of otBTC tokens the user wants to unstake.
-| | signature | The signature of the message `<nonce> unstake <amount>` signed by the private key corresponding to the given Ethereum account.
+| | signature | The signature of the message `<nonce>:unstake:<amount>` signed by the private key corresponding to the given Ethereum account.
 | unlock_tokens_in_queue | N/A | -
-| withdraw_btc | subaccount | The address of an Ethereum account of the user.
+| withdraw_btc | eth_address | The address of an Ethereum account of the user.
 | | amount | The amount of ckBTC tokens the user wants to withdraw.
-| | signature | The signature of the message `<nonce> withdraw_btc <amount>` signed by the private key corresponding to the given Ethereum account.
+| | signature | The signature of the message `<nonce>:withdraw_btc:<amount>` signed by the private key corresponding to the given Ethereum account.

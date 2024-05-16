@@ -1,0 +1,16 @@
+[workspace]
+members = [
+    "src/btc_staking_pool_backend"
+]
+resolver = "2"
+
+[workspace.dependencies]
+candid = "0.10"
+hex = "0.4"
+getrandom = { version = "0.2", features = ["custom"] }
+ic-btc-interface = { git = "https://github.com/dfinity/bitcoin-canister", rev = "62a71e47c491fb842ccc257b1c675651501f4b82" }
+ic-cdk = "0.13"
+ic-ledger-types = "0.9"
+libsecp256k1 = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+sha3 = "0.10"
